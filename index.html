@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Left 4 Dead 2 - El Hoy Por Hoy</title>
+    <style>
+        /* Tipografía y Reseteo */
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Oswald', sans-serif;
+        }
+
+        /* Fondo y Tema General */
+        body {
+            /* AQUÍ PUEDES PONER TU FOTO DE FONDO */
+            /* Simplemente cambia la URL por la ruta de tu imagen */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('fondo.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #d3d3d3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: #c90000; /* Rojo L4D2 */
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px #000;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        /* Contenedores Principales */
+        .container {
+            background-color: rgba(20, 20, 20, 0.85);
+            border: 2px solid #5a0000;
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(201, 0, 0, 0.3);
+        }
+
+        /* Sección de Registro */
+        .registro-box {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1.2rem;
+            background-color: #111;
+            border: 1px solid #c90000;
+            color: #fff;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ff1a1a;
+            box-shadow: 0 0 8px #c90000;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 1.2rem;
+            background-color: #c90000;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #ff1a1a;
+            transform: scale(1.02);
+        }
+
+        button:disabled {
+            background-color: #555;
+            color: #888;
+            cursor: not-allowed;
+            border: 1px solid #333;
+        }
+
+        /* Lista de Jugadores */
+        .lista-jugadores {
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        li {
+            background-color: rgba(201, 0, 0, 0.2);
+            border-left: 4px solid #c90000;
+            padding: 10px;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        li::before {
+            content: "💀";
+            margin-right: 10px;
+        }
+
+        .contador {
+            text-align: right;
+            font-weight: bold;
+            color: #ff1a1a;
+        }
+
+        /* Sección de Reglas (Oculta por defecto) */
+        #reglas-section {
+            display: none;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .regla-bloque {
+            margin-bottom: 20px;
+        }
+
+        .regla-bloque h3 {
+            color: #fff;
+            background-color: #c90000;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .regla-bloque ul {
+            list-style-type: square;
+            margin-left: 20px;
+        }
+
+        .regla-bloque li {
+            background: none;
+            border: none;
+            padding: 0;
+            margin-bottom: 8px;
+            font-family: Arial, sans-serif; /* Más legible para texto largo */
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #ddd;
+        }
+        
+        .regla-bloque li::before {
+            content: "";
+            margin: 0;
+        }
+        
+        .mensaje-alerta {
+            color: #ff1a1a;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            height: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>L4D2: EL HOY POR HOY</h1>
+
+    <div class="container" id="asistencia-section">
+        <h2>Confirmar Asistencia</h2>
+        <p style="text-align: center; margin-bottom: 15px;">Regístrate para asegurar tu lugar. Las reglas se revelarán una vez confirmes.</p>
+        
+        <div class="registro-box">
+            <input type="text" id="nombre-jugador" placeholder="Ingresa tu Nickname..." autocomplete="off">
+            <button id="btn-confirmar" onclick="confirmarAsistencia()">¡Estoy Listo!</button>
+            <div id="mensaje-error" class="mensaje-alerta"></div>
+        </div>
+
+        <div class="lista-jugadores">
+            <h2>Supervivientes Confirmados</h2>
+            <div class="contador">Jugadores: <span id="contador-actual">0</span> / 8</div>
+            <ul id="ul-jugadores">
+                </ul>
+        </div>
+    </div>
+
+    <div class="container" id="reglas-section">
+        <h2>🎮 REGLAS OFICIALES VS 4 VS 4 🎮</h2>
+        <br>
+        
+        <div class="regla-bloque">
+            <h3>1. Formato</h3>
+            <ul>
+                <li>Se jugarán partidas de 5 capítulos, en modo Enfrentamiento 4 vs 4.</li>
+            </ul>
+        </div>
+
+        <div class="regla-bloque">
+            <h3>2. Inicio de la partida</h3>
+            <ul>
+                <li>Antes de comenzar, se deberá esperar a que los 8 jugadores estén dentro de la campaña.</li>
+                <li>La partida comienza únicamente cuando ambos equipos estén listos.</li>
+                <li>Si algún jugador tiene problemas de conexión antes de salir del refugio, se podrá reiniciar la campaña.</li>
+                <li>Si al comenzar una ronda uno de los equipos se encuentra incompleto debido a una desconexión, pero dicho equipo decide iniciar la ronda y comienza a jugar, ya sea como Supervivientes o como Infectados, se considera que acepta jugar bajo esas condiciones y la partida queda oficialmente iniciada, sin derecho a reinicio.</li>
+            </ul>
+        </div>
+
+        <div class="regla-bloque">
+            <h3>3. Reinicios</h3>
+            <ul>
+                <li>Solo se permite reiniciar la campaña si el equipo rival de Supervivientes todavía no ha salido del refugio.</li>
+                <li>Si un jugador se desconecta durante la partida, solo se permitirá reiniciar si los Supervivientes tienen menos de 150 puntos.</li>
+                <li>Una vez superados los 150 puntos, la partida deberá continuar aunque haya una desconexión.</li>
+            </ul>
+        </div>
+
+        <div class="regla-bloque">
+            <h3>4. Abandono de un jugador</h3>
+            <ul>
+                <li>Si un jugador abandona la partida después de haber completado la Campaña 1, la partida deberá continuar hasta el final con la cantidad de jugadores que permanezcan en cada equipo.</li>
+                <li>No se permitirá reiniciar la partida ni incorporar un reemplazo debido al abandono de un jugador.</li>
+                <li>Si un equipo decide no continuar la partida debido a la falta de uno de sus jugadores, se otorgará automáticamente la victoria al equipo contrario.</li>
+                <li>Esta regla aplica tanto si el jugador abandona voluntariamente como si no puede regresar a la partida.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Array para guardar los jugadores simulados
+        let jugadores = [];
+        const MAX_JUGADORES = 8;
+        let usuarioHaConfirmado = false;
+
+        function confirmarAsistencia() {
+            const inputElement = document.getElementById('nombre-jugador');
+            const nombre = inputElement.value.trim();
+            const mensajeError = document.getElementById('mensaje-error');
+
+            // Validaciones
+            if (nombre === "") {
+                mensajeError.textContent = "¡Debes ingresar un Nickname!";
+                return;
+            }
+            if (jugadores.includes(nombre)) {
+                mensajeError.textContent = "Ese jugador ya está registrado.";
+                return;
+            }
+            if (usuarioHaConfirmado) {
+                mensajeError.textContent = "Ya confirmaste tu asistencia.";
+                return;
+            }
+
+            // Limpiar error y agregar jugador
+            mensajeError.textContent = "";
+            jugadores.push(nombre);
+            usuarioHaConfirmado = true;
+            
+            // Actualizar la interfaz
+            actualizarLista();
+            
+            // Limpiar input y bloquear registro para el usuario actual
+            inputElement.value = "";
+            inputElement.disabled = true;
+            
+            const btn = document.getElementById('btn-confirmar');
+            btn.textContent = "¡Asistencia Confirmada!";
+            btn.disabled = true;
+
+            // Desbloquear las reglas
+            document.getElementById('reglas-section').style.display = 'block';
+            
+            // Si llega a 8, cambiar el mensaje visual
+            if (jugadores.length >= MAX_JUGADORES) {
+                inputElement.placeholder = "SALA LLENA";
+                btn.textContent = "SALA LLENA (8/8)";
+            }
+        }
+
+        function actualizarLista() {
+            const ul = document.getElementById('ul-jugadores');
+            const contador = document.getElementById('contador-actual');
+            
+            ul.innerHTML = ""; // Limpiar lista
+            
+            jugadores.forEach(jugador => {
+                const li = document.createElement('li');
+                li.textContent = jugador;
+                ul.appendChild(li);
+            });
+
+            contador.textContent = jugadores.length;
+        }
+    </script>
+</body>
+</html>
