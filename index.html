@@ -10,7 +10,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Oswald', sans-serif; }
 
         body {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('fondo.jpg');
+            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('fondo.jpg');
             background-size: cover; background-position: center; background-attachment: fixed;
             color: #d3d3d3; display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; padding: 20px;
@@ -20,18 +20,18 @@
         h1 { font-size: 3rem; margin-bottom: 10px; letter-spacing: 2px; }
 
         .container {
-            background-color: rgba(20, 20, 20, 0.85); border: 2px solid #5a0000; border-radius: 10px;
-            padding: 30px; width: 100%; max-width: 800px; margin-bottom: 20px;
+            background-color: rgba(20, 20, 20, 0.9); border: 2px solid #5a0000; border-radius: 10px;
+            padding: 30px; width: 100%; max-width: 850px; margin-bottom: 20px;
             box-shadow: 0 0 20px rgba(201, 0, 0, 0.3);
         }
 
         .registro-box { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
 
-        input {
+        input, select {
             padding: 10px; font-size: 1.2rem; background-color: #111;
             border: 1px solid #c90000; color: #fff; border-radius: 5px; outline: none;
         }
-        input:focus { border-color: #ff1a1a; box-shadow: 0 0 8px #c90000; }
+        input:focus, select:focus { border-color: #ff1a1a; box-shadow: 0 0 8px #c90000; }
 
         button {
             padding: 12px; font-size: 1.2rem; background-color: #c90000; color: #fff;
@@ -41,24 +41,42 @@
         button:hover:not(:disabled) { background-color: #ff1a1a; transform: scale(1.02); }
         button:disabled { background-color: #555; color: #888; cursor: not-allowed; border: 1px solid #333; }
 
-        .lista-jugadores { margin-top: 20px; }
-        ul { list-style: none; margin-top: 10px; }
-        
-        li {
-            background-color: rgba(201, 0, 0, 0.2); border-left: 4px solid #c90000;
-            padding: 10px; margin-bottom: 5px; font-size: 1.1rem;
-            display: flex; align-items: center; justify-content: space-between;
+        /* Estilos del Lobby 4v4 */
+        .lobby-container {
+            display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;
         }
         
-        .jugador-info::before { content: "💀"; margin-right: 10px; }
+        .equipo-col {
+            flex: 1; min-width: 280px; background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #333; padding: 15px; border-radius: 5px;
+        }
+
+        .equipo-col h3 { font-size: 1.5rem; margin-bottom: 15px; text-align: left; border-bottom: 2px solid #c90000; padding-bottom: 5px; }
         
+        .slot {
+            display: flex; align-items: center; margin-bottom: 8px;
+            padding: 5px; background: rgba(20, 20, 20, 0.8);
+        }
+
+        .slot-avatar {
+            width: 35px; height: 35px; border: 2px solid #666;
+            margin-right: 15px; background-color: #000; flex-shrink: 0;
+        }
+        
+        .slot.filled .slot-avatar { border-color: #c90000; background-color: rgba(201, 0, 0, 0.3); }
+
+        .slot-info { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        
+        .slot-name { font-family: 'Courier New', Courier, monospace; font-size: 1.2rem; font-weight: bold; color: #666; }
+        .slot.filled .slot-name { color: #fff; }
+
         .btn-eliminar {
             background-color: transparent; color: #ff1a1a; border: 1px solid #ff1a1a;
-            padding: 2px 8px; font-size: 0.9rem; border-radius: 3px; cursor: pointer;
+            padding: 2px 8px; font-size: 1rem; border-radius: 3px; cursor: pointer; height: auto;
         }
-        .btn-eliminar:hover { background-color: #ff1a1a; color: #fff; }
+        .btn-eliminar:hover { background-color: #ff1a1a; color: #fff; transform: scale(1.1); }
 
-        .contador { text-align: right; font-weight: bold; color: #ff1a1a; }
+        /* Sección Reglas */
         #reglas-section { display: none; animation: fadeIn 1s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -76,19 +94,28 @@
 
     <div class="container" id="asistencia-section">
         <h2>Confirmar Asistencia</h2>
-        <p style="text-align: center; margin-bottom: 15px;">Regístrate y crea una clave. Las reglas se revelarán al confirmar.</p>
+        <p style="text-align: center; margin-bottom: 15px;">Selecciona tu equipo y registra tus datos.</p>
         
         <div class="registro-box">
+            <select id="equipo-jugador">
+                <option value="humanos">Supervivientes (Humanos)</option>
+                <option value="infectados">Infectados Especiales</option>
+            </select>
             <input type="text" id="nombre-jugador" placeholder="Ingresa tu Nickname..." autocomplete="off">
             <input type="password" id="clave-jugador" placeholder="Crea una clave para tu usuario...">
             <button id="btn-confirmar" onclick="confirmarAsistencia()">¡Estoy Listo!</button>
             <div id="mensaje-error" class="mensaje-alerta"></div>
         </div>
 
-        <div class="lista-jugadores">
-            <h2>Supervivientes Confirmados</h2>
-            <div class="contador">Jugadores: <span id="contador-actual">0</span> / 8</div>
-            <ul id="ul-jugadores"></ul>
+        <div class="lobby-container">
+            <div class="equipo-col">
+                <h3 id="titulo-humanos">HUMANOS (0/4)</h3>
+                <div id="slots-humanos"></div>
+            </div>
+            <div class="equipo-col">
+                <h3 id="titulo-infectados">INFECTADOS (0/4)</h3>
+                <div id="slots-infectados"></div>
+            </div>
         </div>
     </div>
 
@@ -128,23 +155,24 @@
 
     <script>
         const CLAVE_MAESTRA = "081225";
-        const MAX_JUGADORES = 8;
-        
-        // Cargar jugadores guardados en el navegador o iniciar arreglo vacío
         let jugadores = JSON.parse(localStorage.getItem('l4d2_jugadores')) || [];
 
-        // Inicializar interfaz al cargar
         window.onload = () => {
             actualizarLista();
             if(jugadores.length > 0) document.getElementById('reglas-section').style.display = 'block';
         };
 
         function confirmarAsistencia() {
+            const inputEquipo = document.getElementById('equipo-jugador');
             const inputNombre = document.getElementById('nombre-jugador');
             const inputClave = document.getElementById('clave-jugador');
+            
+            const equipo = inputEquipo.value;
             const nombre = inputNombre.value.trim();
             const clave = inputClave.value.trim();
             const mensajeError = document.getElementById('mensaje-error');
+
+            const jugadoresEnEquipo = jugadores.filter(j => j.equipo === equipo).length;
 
             if (nombre === "" || clave === "") {
                 mensajeError.textContent = "¡Debes ingresar un Nickname y una Clave!";
@@ -154,15 +182,13 @@
                 mensajeError.textContent = "Ese jugador ya está registrado.";
                 return;
             }
-            if (jugadores.length >= MAX_JUGADORES) {
-                mensajeError.textContent = "La sala ya está llena.";
+            if (jugadoresEnEquipo >= 4) {
+                mensajeError.textContent = `El equipo de ${equipo.toUpperCase()} ya está lleno (4/4).`;
                 return;
             }
 
             mensajeError.textContent = "";
-            
-            // Guardar jugador como un objeto con nombre y clave
-            jugadores.push({ nombre: nombre, clave: clave });
+            jugadores.push({ nombre: nombre, clave: clave, equipo: equipo });
             guardarDatos();
             
             inputNombre.value = "";
@@ -172,14 +198,14 @@
             actualizarLista();
         }
 
-        function eliminarJugador(index) {
-            const jugador = jugadores[index];
+        function eliminarJugador(indexGlobal) {
+            const jugador = jugadores[indexGlobal];
             const intentoClave = prompt(`Ingresa la clave para eliminar a ${jugador.nombre}:`);
             
-            if (intentoClave === null) return; // Si cancela el prompt
+            if (intentoClave === null) return; 
 
             if (intentoClave === jugador.clave || intentoClave === CLAVE_MAESTRA) {
-                jugadores.splice(index, 1);
+                jugadores.splice(indexGlobal, 1);
                 guardarDatos();
                 actualizarLista();
             } else {
@@ -191,34 +217,59 @@
             localStorage.setItem('l4d2_jugadores', JSON.stringify(jugadores));
         }
 
+        function renderizarEquipo(equipoId, contenedorId, tituloId, tituloTexto) {
+            const teamPlayers = jugadores.filter(j => j.equipo === equipoId);
+            const container = document.getElementById(contenedorId);
+            document.getElementById(tituloId).textContent = `${tituloTexto} (${teamPlayers.length}/4)`;
+            
+            container.innerHTML = ""; 
+            
+            for(let i = 0; i < 4; i++) {
+                const div = document.createElement('div');
+                
+                if (i < teamPlayers.length) {
+                    const j = teamPlayers[i];
+                    const indexGlobal = jugadores.indexOf(j);
+                    div.className = 'slot filled';
+                    div.innerHTML = `
+                        <div class="slot-avatar"></div>
+                        <div class="slot-info">
+                            <span class="slot-name">${j.nombre}</span>
+                            <button class="btn-eliminar" onclick="eliminarJugador(${indexGlobal})">X</button>
+                        </div>
+                    `;
+                } else {
+                    div.className = 'slot';
+                    div.innerHTML = `
+                        <div class="slot-avatar"></div>
+                        <div class="slot-info">
+                            <span class="slot-name">Plaza disponible</span>
+                        </div>
+                    `;
+                }
+                container.appendChild(div);
+            }
+        }
+
         function actualizarLista() {
-            const ul = document.getElementById('ul-jugadores');
-            const contador = document.getElementById('contador-actual');
+            renderizarEquipo('humanos', 'slots-humanos', 'titulo-humanos', 'HUMANOS');
+            renderizarEquipo('infectados', 'slots-infectados', 'titulo-infectados', 'INFECTADOS');
+
             const btnConfirmar = document.getElementById('btn-confirmar');
             const inputNombre = document.getElementById('nombre-jugador');
             const inputClave = document.getElementById('clave-jugador');
-            
-            ul.innerHTML = ""; 
-            
-            jugadores.forEach((jugador, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span class="jugador-info">${jugador.nombre}</span>
-                    <button class="btn-eliminar" onclick="eliminarJugador(${index})">X</button>
-                `;
-                ul.appendChild(li);
-            });
+            const selectEquipo = document.getElementById('equipo-jugador');
 
-            contador.textContent = jugadores.length;
-
-            if (jugadores.length >= MAX_JUGADORES) {
+            if (jugadores.length >= 8) {
                 inputNombre.disabled = true;
                 inputClave.disabled = true;
+                selectEquipo.disabled = true;
                 btnConfirmar.textContent = "SALA LLENA (8/8)";
                 btnConfirmar.disabled = true;
             } else {
                 inputNombre.disabled = false;
                 inputClave.disabled = false;
+                selectEquipo.disabled = false;
                 btnConfirmar.textContent = "¡Estoy Listo!";
                 btnConfirmar.disabled = false;
             }
