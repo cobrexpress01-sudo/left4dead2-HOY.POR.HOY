@@ -33,6 +33,9 @@
         }
         input:focus, select:focus { border-color: #ff1a1a; box-shadow: 0 0 8px #c90000; }
 
+        /* Ocultar el selector de personajes por defecto */
+        #personaje-box { display: none; }
+
         button {
             padding: 12px; font-size: 1.2rem; background-color: #c90000; color: #fff;
             border: none; border-radius: 5px; cursor: pointer; text-transform: uppercase;
@@ -66,13 +69,20 @@
         
         .slot.filled .slot-avatar { border-color: #c90000; background-color: rgba(201, 0, 0, 0.3); }
         
-        /* Carga la imagen solo para el equipo de infectados */
+        /* Imágenes de los avatares */
         .slot.filled .slot-avatar.img-infectado { background-image: url('infectado.jpg'); }
+        .slot.filled .slot-avatar.img-ellis { background-image: url('ellis.jpg'); }
+        .slot.filled .slot-avatar.img-nick { background-image: url('nick.jpg'); }
+        .slot.filled .slot-avatar.img-coach { background-image: url('coach.jpg'); }
+        .slot.filled .slot-avatar.img-rochelle { background-image: url('rochelle.jpg'); }
 
         .slot-info { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         
         .slot-name { font-family: 'Courier New', Courier, monospace; font-size: 1.2rem; font-weight: bold; color: #666; }
         .slot.filled .slot-name { color: #fff; }
+
+        /* Estilo para el nombre del personaje al lado del jugador */
+        .personaje-tag { font-size: 0.9rem; color: #aaa; margin-left: 8px; font-weight: normal; }
 
         .btn-eliminar {
             background-color: transparent; color: #ff1a1a; border: 1px solid #ff1a1a;
@@ -80,7 +90,6 @@
         }
         .btn-eliminar:hover { background-color: #ff1a1a; color: #fff; transform: scale(1.1); }
 
-        /* Sección Reglas */
         #reglas-section { display: none; animation: fadeIn 1s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -101,10 +110,18 @@
         <p style="text-align: center; margin-bottom: 15px;">Selecciona tu equipo y registra tus datos.</p>
         
         <div class="registro-box">
-            <select id="equipo-jugador">
+            <select id="equipo-jugador" onchange="verificarEquipo()">
                 <option value="humanos">Supervivientes (Humanos)</option>
                 <option value="infectados">Infectados Especiales</option>
             </select>
+            
+            <select id="personaje-box">
+                <option value="ellis">Ellis</option>
+                <option value="nick">Nick</option>
+                <option value="coach">Coach</option>
+                <option value="rochelle">Rochelle</option>
+            </select>
+
             <input type="text" id="nombre-jugador" placeholder="Ingresa tu Nickname..." autocomplete="off">
             <input type="password" id="clave-jugador" placeholder="Crea una clave para tu usuario...">
             <button id="btn-confirmar" onclick="confirmarAsistencia()">¡Estoy Listo!</button>
@@ -130,6 +147,7 @@
             <h3>1. Formato</h3>
             <ul><li>Se jugarán partidas de 5 capítulos, en modo Enfrentamiento 4 vs 4.</li></ul>
         </div>
+        <!-- (Resto de las reglas intactas para ahorrar espacio visual, ya las conoces) -->
         <div class="regla-bloque">
             <h3>2. Inicio de la partida</h3>
             <ul>
@@ -162,16 +180,29 @@
         let jugadores = JSON.parse(localStorage.getItem('l4d2_jugadores')) || [];
 
         window.onload = () => {
+            verificarEquipo(); // Mostrar u ocultar lista de personajes al cargar
             actualizarLista();
             if(jugadores.length > 0) document.getElementById('reglas-section').style.display = 'block';
         };
 
+        function verificarEquipo() {
+            const equipo = document.getElementById('equipo-jugador').value;
+            const personajeBox = document.getElementById('personaje-box');
+            if (equipo === 'humanos') {
+                personajeBox.style.display = 'block';
+            } else {
+                personajeBox.style.display = 'none';
+            }
+        }
+
         function confirmarAsistencia() {
             const inputEquipo = document.getElementById('equipo-jugador');
+            const selectPersonaje = document.getElementById('personaje-box');
             const inputNombre = document.getElementById('nombre-jugador');
             const inputClave = document.getElementById('clave-jugador');
             
             const equipo = inputEquipo.value;
+            const personaje = equipo === 'humanos' ? selectPersonaje.value : null;
             const nombre = inputNombre.value.trim();
             const clave = inputClave.value.trim();
             const mensajeError = document.getElementById('mensaje-error');
@@ -190,9 +221,17 @@
                 mensajeError.textContent = `El equipo de ${equipo.toUpperCase()} ya está lleno (4/4).`;
                 return;
             }
+            // Validar que no elijan un personaje ya tomado en el equipo Humanos
+            if (equipo === 'humanos') {
+                const personajeOcupado = jugadores.some(j => j.equipo === 'humanos' && j.personaje === personaje);
+                if (personajeOcupado) {
+                    mensajeError.textContent = `¡El personaje ${personaje.toUpperCase()} ya está ocupado! Elige otro.`;
+                    return;
+                }
+            }
 
             mensajeError.textContent = "";
-            jugadores.push({ nombre: nombre, clave: clave, equipo: equipo });
+            jugadores.push({ nombre: nombre, clave: clave, equipo: equipo, personaje: personaje });
             guardarDatos();
             
             inputNombre.value = "";
@@ -236,16 +275,22 @@
                     const indexGlobal = jugadores.indexOf(j);
                     div.className = 'slot filled';
                     
-                    // Asignar clase especial de imagen si es infectado
                     let avatarClass = "slot-avatar";
+                    let extraNameInfo = "";
+
                     if (equipoId === 'infectados') {
                         avatarClass += " img-infectado";
+                    } else if (equipoId === 'humanos' && j.personaje) {
+                        avatarClass += " img-" + j.personaje;
+                        // Mostrar el nombre del personaje al lado del jugador
+                        const nombrePersonajeMayus = j.personaje.charAt(0).toUpperCase() + j.personaje.slice(1);
+                        extraNameInfo = `<span class="personaje-tag">(${nombrePersonajeMayus})</span>`;
                     }
 
                     div.innerHTML = `
                         <div class="${avatarClass}"></div>
                         <div class="slot-info">
-                            <span class="slot-name">${j.nombre}</span>
+                            <span class="slot-name">${j.nombre} ${extraNameInfo}</span>
                             <button class="btn-eliminar" onclick="eliminarJugador(${indexGlobal})">X</button>
                         </div>
                     `;
@@ -270,17 +315,20 @@
             const inputNombre = document.getElementById('nombre-jugador');
             const inputClave = document.getElementById('clave-jugador');
             const selectEquipo = document.getElementById('equipo-jugador');
+            const selectPersonaje = document.getElementById('personaje-box');
 
             if (jugadores.length >= 8) {
                 inputNombre.disabled = true;
                 inputClave.disabled = true;
                 selectEquipo.disabled = true;
+                selectPersonaje.disabled = true;
                 btnConfirmar.textContent = "SALA LLENA (8/8)";
                 btnConfirmar.disabled = true;
             } else {
                 inputNombre.disabled = false;
                 inputClave.disabled = false;
                 selectEquipo.disabled = false;
+                selectPersonaje.disabled = false;
                 btnConfirmar.textContent = "¡Estoy Listo!";
                 btnConfirmar.disabled = false;
             }
