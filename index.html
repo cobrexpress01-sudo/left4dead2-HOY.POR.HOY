@@ -61,9 +61,13 @@
         .slot-avatar {
             width: 35px; height: 35px; border: 2px solid #666;
             margin-right: 15px; background-color: #000; flex-shrink: 0;
+            background-size: cover; background-position: center;
         }
         
         .slot.filled .slot-avatar { border-color: #c90000; background-color: rgba(201, 0, 0, 0.3); }
+        
+        /* Carga la imagen solo para el equipo de infectados */
+        .slot.filled .slot-avatar.img-infectado { background-image: url('infectado.jpg'); }
 
         .slot-info { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         
@@ -231,8 +235,15 @@
                     const j = teamPlayers[i];
                     const indexGlobal = jugadores.indexOf(j);
                     div.className = 'slot filled';
+                    
+                    // Asignar clase especial de imagen si es infectado
+                    let avatarClass = "slot-avatar";
+                    if (equipoId === 'infectados') {
+                        avatarClass += " img-infectado";
+                    }
+
                     div.innerHTML = `
-                        <div class="slot-avatar"></div>
+                        <div class="${avatarClass}"></div>
                         <div class="slot-info">
                             <span class="slot-name">${j.nombre}</span>
                             <button class="btn-eliminar" onclick="eliminarJugador(${indexGlobal})">X</button>
